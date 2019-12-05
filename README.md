@@ -1,29 +1,8 @@
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/guillaumebriday)
-[![Docker Pulls](https://img.shields.io/docker/pulls/guillaumebriday/traefik-custom-error-pages.svg)](https://hub.docker.com/r/guillaumebriday/traefik-custom-error-pages/)
-[![Docker Stars](https://img.shields.io/docker/stars/guillaumebriday/traefik-custom-error-pages.svg)](https://hub.docker.com/r/guillaumebriday/traefik-custom-error-pages/)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/64de9cea-fa16-4f76-b5b8-a1abb5eb4e2f/deploy-status)](https://app.netlify.com/sites/traefik-custom-error-pages/deploys)
-
 # Custom error pages for Traefik
 
 A bunch of custom error pages for Traefik built with [Jekyll](https://jekyllrb.com/).
-
-## Installation
-
-Install dependencies
-```bash
-$ bundle install
-```
-
-If you want to build the project on your host:
-```bash
-$ jekyll build
-```
-
-If you want to preview the pages before building the Docker image :
-```bash
-$ jekyll serve
-$ open http://127.0.0.1:4000/
-```
+> This is a [fork](https://github.com/Jakob-em/traefik-custom-error-pages.git).
+> I do provide images for arm64, arm7 and amd64
 
 ## How to use with Traefik and Docker
 
@@ -32,30 +11,56 @@ Labels are already define in the image to work with Traefik.
 To use it in production just run the container :
 
 ```bash
-$ docker run -d --restart always guillaumebriday/traefik-custom-error-pages
+$ docker run -d tprasadtp/traefik-custom-error-pages
 ```
 
 ## Build the image
 
-This is a [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/), to build the final image:
-```bash
-$ docker build -f .cloud/docker/Dockerfile -t traefik-custom-error-pages .
+```console
+➜ docker buildx create --name mybuilder
+➜ ./build.sh -h
+Usage : build.sh [options]
+
+Build traefik-erro-pages docker images
+
+Requires:
+    1. docker-ce 19.05 and above
+    2. docker cli experimental features enabled
+    3. You have created a builder named mybuilder
+    4. If using docker.io package, install buildx
+    5. Install qemu-user package to enable cross builds.
+
+Options:
+-h --help         Display this message
+-c --skip-cross   Skip cross build, just build jelkyll assets
+-p --skip-push    Skip Pushing do Docker Hub
+-l --latest       Add Tag latest
+
+
 ```
+
+> Building on ARM is not supported as jekyll/builder is not available for ARM/ARM64
+> Do note that the the image from this repo is indeed supported on arm64, arm and amd64
+> Just that you cannot build this on arm(yet)
+
+- Because how buildx works, you have to either push to docker hub/registry or load the image manually
+- You can skip pushing to docker hub via `-p` option.
 
 ## How it works?
 
 As you can see in the Dockerfile, I use [Nginx](https://www.nginx.com/) as Web server to serve static files. To generate this pages, I use [Jekyll](https://jekyllrb.com/) in the first step of the build.
 
-For traefik, I hardcoded [Labels](https://docs.traefik.io/user-guide/docker-and-lets-encrypt/#labels) in the Dockerfile.
+For traefik, You need to add right labels. that depends on traefik version.
 
-You will find in this article [https://www.techjunktrunk.com/docker/2017/11/03/traefik-default-server-catch-all](https://www.techjunktrunk.com/docker/2017/11/03/traefik-default-server-catch-all/) why I set up `priority` and `rule` this way.
+## Traefik v2
 
-```ini
-LABEL traefik.frontend.priority="1"
-LABEL traefik.frontend.rule="HostRegexp:{catchall:.*}"
+```console
+
+
 ```
 
-It's very useful because this container will respond to all requests only if there is no container with a real rule.
+> It is very important that you set priorities on entrupoint(v1) and routers(v2 correctly).
+> Additionally for v2 you need be careful with order of middlewares.
 
 ## Credits
 
