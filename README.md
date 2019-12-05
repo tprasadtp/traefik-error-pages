@@ -2,7 +2,8 @@
 
 A bunch of custom error pages for Traefik built with [Jekyll](https://jekyllrb.com/).
 > This is a [fork](https://github.com/Jakob-em/traefik-custom-error-pages.git).
-> I do provide images for arm64, arm7 and amd64
+> I do provide images for arm64, arm7 and amd64 on [DockerHub](https://hub.docker.com/repository/docker/tprasadtp/traefik-error-pages)
+
 
 ## How to use with Traefik and Docker
 
@@ -54,12 +55,22 @@ For traefik, You need to add right labels. that depends on traefik version.
 
 ## Traefik v2
 
-```console
-
-
+Use errorpages
+```yaml
+services:
+    errorservice:
+        image: tprasadtp/traefik-custom-error-pages:latest
+    traefik:
+        image: traefik:latest
+        labels:
+            # Add Custom routers and middleware
+            # Add erorpage middleware to your low priority router
+            - "traefik.http.middlewares.errorpage.errors.status=500-599"
+            - "traefik.http.middlewares.errorpage.errors.service=errorservice"
+            - "traefik.http.middlewares.errorpage.errors.query=/{status}.html"
 ```
 
-> It is very important that you set priorities on entrupoint(v1) and routers(v2 correctly).
+> It is very important that you set priorities on backend(v1) and routers(v2) correctly.
 > Additionally for v2 you need be careful with order of middlewares.
 
 ## Credits

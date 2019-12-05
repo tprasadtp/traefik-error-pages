@@ -53,6 +53,9 @@ function build_assets()
     mkdir docker/_site
     _info "Copying static files"
     docker cp copier:/tmp/_site/ docker/
+
+    _info "Delete dummy container"
+    docker rm copier &> /dev/null
 }
 
 
